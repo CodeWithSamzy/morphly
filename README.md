@@ -53,3 +53,13 @@ Two Hobby-account defaults need correcting the first time, and both are one comm
 
 - The CLI may detect this repo as a Vercel Service and write a `services` block into `vercel.json`. That routes every request to the Node server and skips `api/` and `middleware.js`. Delete the `services` and `rewrites` keys and run `vercel project update morphly --framework other`.
 - Vercel Authentication protects every deployment except custom domains, so the production `*.vercel.app` URL asks for a Vercel login. Run `vercel project protection disable morphly --sso` to leave `ACCESS_PASSWORD` as the only gate. This also makes preview URLs public, which is why `ACCESS_PASSWORD` is set for both the Production and Preview environments.
+
+## Contributing
+
+Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for how to run the project locally and what to check before opening a pull
+request.
+
+## License
+
+Released under the MIT License. See [LICENSE](LICENSE).
