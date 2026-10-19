@@ -1,0 +1,24 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Dependencies and deployment state
+node_modules/
+.vercel/
+dist/
+
+# Local test artifacts
+test-input.png
+test-output-*.png
+
+# Local-only files kept on disk, not part of the app
+edit-core.js
+lib/edit.mjs
+render.yaml
+Morphly.md
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.log
