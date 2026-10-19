@@ -24,36 +24,6 @@ Set `ACCESS_PASSWORD` in `.env` to exercise the password gate locally; without i
 
 `CF_IMAGE_MODEL` overrides the model. `@cf/black-forest-labs/flux-2-klein-4b` is the cheaper, faster variant if you want to trade some quality for headroom.
 
-## Public deployment
-
-Set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as server-side environment variables. Never expose them in browser code. The server binds to `0.0.0.0` in production and uses the host-provided `PORT`. Set `TRUST_PROXY=true` only when the host supplies a trusted `X-Forwarded-For` header.
-
-Set `ACCESS_PASSWORD` to password-protect the deployment. When it is set, every page and API route requires a signed session cookie issued by `/login`, and `/api/edit` re-checks the cookie itself. Leave it unset for an open deployment. `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are optional and add a shared per-IP daily counter; without them the counter stays in memory and can reset between requests, which is fine for a single-user deployment where the Workers AI account quota is the real ceiling.
-
-Workers AI bills FLUX.2 [klein] 9B at $0.015 for the first output megapixel and $0.002 per additional output megapixel plus $0.002 per input megapixel. The Workers AI free plan includes 10,000 neurons per day per account, which only covers a handful of edits, so the free tier will run out on a busy day; the app reports that plainly instead of failing silently. Keep the daily edit limit and usage monitoring enabled, and move to a Workers Paid plan before sharing widely.
-
-### Publish with Vercel
-
-Vercel serves `index.html`, `styles.css`, `app.js`, `login.html`, and `login.js` as static files, runs `api/edit.js` and `api/auth.js` as functions, and uses `middleware.js` to gate every route behind the password. `vercel.json` sets `cleanUrls` so `/login` maps to `login.html`, raises the edit function's maximum duration to 300 seconds, and adds the same security headers the local server sends.
-
-1. Install the CLI and sign in: `npm i -g vercel`, then `vercel login`.
-2. From this folder run `vercel`. Accept the detected settings: no build command, no output directory.
-3. Add the environment variables for the Production and Preview environments, either in the dashboard under **Project Settings > Environment Variables** or one at a time with `vercel env add ACCESS_PASSWORD production`:
-   - `ACCESS_PASSWORD` - the password that unlocks the site.
-   - `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`.
-   - `CF_IMAGE_MODEL` - optional, defaults to `@cf/black-forest-labs/flux-2-klein-9b`.
-   - `EDITS_PER_DAY` - optional, defaults to 3 per IP address.
-   - `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` - optional.
-4. Run `vercel --prod` to deploy, or `vercel` for a preview URL.
-5. Open the deployment URL. You are redirected to `/login`; after unlocking, the session lasts 30 days.
-
-Vercel caps function request bodies at 4.5 MB and returns `413 FUNCTION_PAYLOAD_TOO_LARGE` above that, which is why the client caps photos at 1280 px. Hobby accounts may use their functions for personal, non-commercial projects, which covers this use. Treat the deployment URL as public: `ACCESS_PASSWORD` is the only thing standing between a stranger and your Cloudflare allowance.
-
-Two Hobby-account defaults need correcting the first time, and both are one command:
-
-- The CLI may detect this repo as a Vercel Service and write a `services` block into `vercel.json`. That routes every request to the Node server and skips `api/` and `middleware.js`. Delete the `services` and `rewrites` keys and run `vercel project update morphly --framework other`.
-- Vercel Authentication protects every deployment except custom domains, so the production `*.vercel.app` URL asks for a Vercel login. Run `vercel project protection disable morphly --sso` to leave `ACCESS_PASSWORD` as the only gate. This also makes preview URLs public, which is why `ACCESS_PASSWORD` is set for both the Production and Preview environments.
-
 ## Contributing
 
 Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
